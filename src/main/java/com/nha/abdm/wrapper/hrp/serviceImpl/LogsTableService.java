@@ -1,11 +1,10 @@
 package com.nha.abdm.wrapper.hrp.serviceImpl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.nha.abdm.wrapper.hrp.CommonHelpers.ResponseHelper;
-import com.nha.abdm.wrapper.hrp.CommonHelpers.VerifyOtp;
-import com.nha.abdm.wrapper.hrp.CommonHelpers.CareContextBuilder;
+import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.DiscoverResponse;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.InitResponse;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.LinkRecordsResponse;
@@ -37,6 +36,8 @@ public class LogsTableService {
     @Autowired
     PatientTableService patientTableService;
     private static final Logger log = LogManager.getLogger(LogsTableService.class);
+
+
 
 
     public String getPatientId(String linkRefNumber) {
@@ -87,13 +88,13 @@ public class LogsTableService {
         }if(contentType == LinkRecordsResponse.class && Objects.nonNull(content)){
             LinkRecordsResponse data=(LinkRecordsResponse) content;
                 RequestLogs newRecord=new RequestLogs();
-                newRecord.setGatewayRequestId1(data.getRequestId());
+                newRecord.setRequestId(data.getRequestId());
                 newRecord.setClientRequestId(data.getRequestId());
-                newRecord.setResponse("Initiated");
-                newRecord.setOtp(null);
+                newRecord.setGatewayRequestId(requestEntity.getBody().get("requestId").asText());
                 HashMap<String,Object> map=new HashMap<>();
                 map.put("LinkRecordsResponse",data);
                 newRecord.setRawResponse(map);
+//                logsRepo.save(newRecord);
                 mongoTemplate.save(newRecord);
 
         }if(contentType == Object.class && Objects.nonNull(content)){
@@ -110,29 +111,29 @@ public class LogsTableService {
             }
         }if(contentType == OnInitResponse.class && Objects.nonNull(content)) {
             OnInitResponse data = (OnInitResponse) content;
-            Query query = new Query(Criteria.where("gatewayRequestId1").is(data.getResp().getRequestId()));
+            Query query = new Query(Criteria.where("requestId").is(data.getResp().getRequestId()));
             RequestLogs existingRecord = mongoTemplate.findOne(query, RequestLogs.class);
             HashMap<String,Object> map=existingRecord.getRawResponse();
             map.put("OnInitResponse",data);
             if (existingRecord != null) {
                 Update update = (new Update())
                         .set("rawResponse",map)
-                        .set("gatewayRequestId1", data.getRequestId())
-                        .set("gatewayRequestId2", requestEntity.getBody().get("requestId").asText());
+                        .set("requestId", data.getRequestId())
+                        .set("gatewayRequestId", requestEntity.getBody().get("requestId").asText());
                 mongoTemplate.updateFirst(query, update, RequestLogs.class);
             }
         }
         if(contentType == OnConfirmResponse.class && Objects.nonNull(content)) {
             OnConfirmResponse data = (OnConfirmResponse) content;
-            Query query = new Query(Criteria.where("gatewayRequestId2").is(data.getResp().getRequestId()));
+            Query query = new Query(Criteria.where("requestId").is(data.getResp().getRequestId()));
             RequestLogs existingRecord = mongoTemplate.findOne(query, RequestLogs.class);
             HashMap<String,Object> map=existingRecord.getRawResponse();
             map.put("OnConfirmResponse",data);
             if (existingRecord != null) {
                 Update update = (new Update())
                         .set("rawResponse",map)
-                        .set("gatewayRequestId1", data.getRequestId())
-                        .set("gatewayRequestId2", requestEntity.getBody().get("requestId").asText());
+                        .set("requestId", data.getRequestId())
+                        .set("gatewayRequestId", requestEntity.getBody().get("requestId").asText());
                 mongoTemplate.updateFirst(query, update, RequestLogs.class);
             }
         }
@@ -159,37 +160,19 @@ public class LogsTableService {
 
         return null;
     }
-    public String getStatus(ResponseHelper data) {
-        RequestLogs existingRecord=logsRepo.findByClientRequestId(data.getRequestId());
+    public String getStatus(JsonNode data) {
+        RequestLogs existingRecord=logsRepo.findByClientRequestId(data.get("requestId").asText());
         if(existingRecord!=null){
             return existingRecord.getResponse().toString();
         }
         return "Record failed but stored in database";
     }
         public void setStatus(OnAddCareContextResponse data) {
-        RequestLogs existingRecord=logsRepo.findByGatewayRequestId2(data.getResp().getRequestId());
-        try{
+        RequestLogs existingRecord=logsRepo.findByClientRequestId(data.getResp().getRequestId());
         if(existingRecord!=null){
-            Query query = new Query(Criteria.where("gatewayRequestId2").is(data.getResp().getRequestId()));
+            Query query = new Query(Criteria.where("requestId").is(data.getResp().getRequestId()));
             Update update = (new Update()).set("response", data.getAcknowledgement().getStatus());
             mongoTemplate.updateFirst(query, update, RequestLogs.class);
-            LinkRecordsResponse linkRecordsResponse=(LinkRecordsResponse) existingRecord.getRawResponse().get("LinkRecordsResponse");
-            patientTableService.updateCareContextStatus(linkRecordsResponse.getPatientReference(),linkRecordsResponse.getPatient().getCareContexts());
-        }}catch (Exception e){
-            log.error("Unable tom update the status of careContext");
-        }
-    }
-
-    public void setOtp(VerifyOtp data) {
-        RequestLogs existingRecord=logsRepo.findByClientRequestId(data.getRequestId());
-        try{
-            if(existingRecord!=null){
-                Query query = new Query(Criteria.where("clientRequestId").is(data.getRequestId()));
-                Update update = (new Update()).set("otp", data.getAuthCode());
-                mongoTemplate.updateFirst(query, update, RequestLogs.class);
-                log.info("set otp success");
-            }}catch (Exception e){
-            log.error("Unable to set otp");
         }
     }
 }

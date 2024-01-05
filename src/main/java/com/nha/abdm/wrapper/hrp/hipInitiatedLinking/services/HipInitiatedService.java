@@ -10,11 +10,12 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeoutException;
 
 public interface HipInitiatedService {
     Object authInit(LinkRecordsResponse data) throws URISyntaxException, JsonProcessingException;
 
-    ResponseEntity<ObjectNode> confirmAuth(OnInitResponse data) throws URISyntaxException, FileNotFoundException, JsonProcessingException, TimeoutException;
+    ResponseEntity<ObjectNode> confirmAuth(OnInitResponse data) throws URISyntaxException, FileNotFoundException, JsonProcessingException;
+//
     ResponseEntity<ObjectNode> addContext(OnConfirmResponse data) throws Exception;
+    void addContextAccessToken(LinkRecordsResponse data, String accessToken, Patients patient) throws URISyntaxException, FileNotFoundException, JsonProcessingException;
 }

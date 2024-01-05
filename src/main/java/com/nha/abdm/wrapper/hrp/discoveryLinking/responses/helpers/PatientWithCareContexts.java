@@ -1,6 +1,6 @@
 package com.nha.abdm.wrapper.hrp.discoveryLinking.responses.helpers;
 
-import com.nha.abdm.wrapper.hrp.CommonHelpers.CareContextBuilder;
+import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
 import lombok.Data;
 import java.util.List;
 

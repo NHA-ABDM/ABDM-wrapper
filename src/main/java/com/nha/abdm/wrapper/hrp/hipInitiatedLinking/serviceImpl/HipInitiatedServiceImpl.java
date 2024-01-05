@@ -3,15 +3,14 @@ package com.nha.abdm.wrapper.hrp.hipInitiatedLinking.serviceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.nha.abdm.wrapper.hrp.CommonHelpers.CustomError;
+import com.nha.abdm.wrapper.hrp.common.CustomError;
 import com.nha.abdm.wrapper.hrp.common.GatewayApiPaths;
-import com.nha.abdm.wrapper.hrp.common.MakeRequest;
-import com.nha.abdm.wrapper.hrp.common.SessionManager;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.requests.CareContextRequest;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.requests.ConfirmAuthBody;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.services.HipInitiatedService;
 import com.nha.abdm.wrapper.hrp.mongo.tables.Patients;
 import com.nha.abdm.wrapper.hrp.mongo.tables.RequestLogs;
+import com.nha.abdm.wrapper.hrp.properties.ApplicationConfig;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.requests.AuthInitBody;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.LinkRecordsResponse;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.OnConfirmResponse;
@@ -20,38 +19,55 @@ import com.nha.abdm.wrapper.hrp.repository.LogsRepo;
 import com.nha.abdm.wrapper.hrp.repository.PatientRepo;
 import com.nha.abdm.wrapper.hrp.serviceImpl.LogsTableService;
 import com.nha.abdm.wrapper.hrp.serviceImpl.PatientTableService;
+import com.nha.abdm.wrapper.hrp.serviceImpl.TokenManagementService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Service
 public class HipInitiatedServiceImpl implements HipInitiatedService {
     private static final Logger log = LogManager.getLogger(HipInitiatedServiceImpl.class);
+    RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    ApplicationConfig applicationConfig;
+    @Autowired
+    AuthInitBody authInitBody;
+    @Autowired
+    ConfirmAuthBody confirmAuthBody;
+
+    @Autowired
+    CareContextRequest careContextRequest;
     @Autowired
     LogsTableService logsTableService;
+
+    @Autowired
+    CareContextRequest careContextRequestOnConfirm;
+    @Autowired
+    CareContextRequest careContextRequestLinkedResponse;
+    @Autowired
+    GatewayApiPaths gatewayApiPaths;
     @Autowired
     PatientTableService patientTableService;
 
     @Autowired
     PatientRepo patientRepo;
-    @Autowired
-    SessionManager sessionManager;
 
     @Autowired
     LogsRepo logsRepo;
     @Autowired
     CustomError customError;
-    private WebClient.Builder webClientBuilder = WebClient.builder();
+    @Autowired
+    TokenManagementService tokenManagementService;
 
     public Object authInit(LinkRecordsResponse data) throws URISyntaxException, JsonProcessingException {
         try{
@@ -64,13 +80,8 @@ public class HipInitiatedServiceImpl implements HipInitiatedService {
                 return customError;
             }
             patientTableService.addPatient(data);
-            HttpEntity<ObjectNode> requestEntity = AuthInitBody.builder()
-                    .data(data)
-                    .abhaAddress(existingRecord.getAbhaAddress())
-                    .sessionManager(sessionManager)
-                    .build()
-                    .makeRequest();
-            ResponseEntity<ObjectNode> responseEntity=MakeRequest.post(GatewayApiPaths.LINK_AUTH_INIT,requestEntity);
+            HttpEntity<ObjectNode> requestEntity = authInitBody.makeRequest(data,existingRecord.getAbhaAddress());
+            ResponseEntity<ObjectNode> responseEntity = this.restTemplate.exchange(new URI(gatewayApiPaths.LINK_AUTH_INIT), HttpMethod.POST, requestEntity, ObjectNode.class);
             log.info("LinkRecords storing data");
             logsTableService.setContent(data,requestEntity, LinkRecordsResponse.class);
             log.info(responseEntity.getStatusCode());
@@ -80,65 +91,46 @@ public class HipInitiatedServiceImpl implements HipInitiatedService {
             return responseData;
 
         }catch(Exception e){
-            log.info("Link authInit : "+e);
+            log.info("authInit : "+e);
             customError.setCode(1000);
             customError.setMessage("Found many patients with same patientReference");
             return customError;
         }
     }
-    public ResponseEntity<ObjectNode> confirmAuth(OnInitResponse data) throws URISyntaxException, JsonProcessingException, FileNotFoundException, TimeoutException {
-        RequestLogs existingRecord=logsRepo.findByGatewayRequestId1(data.getResp().getRequestId());
+    public ResponseEntity<ObjectNode> confirmAuth(@RequestBody OnInitResponse data) throws URISyntaxException, JsonProcessingException, FileNotFoundException {
+        RequestLogs existingRecord=logsRepo.findByRequestId(data.getResp().getRequestId());
         if(existingRecord!=null){
             log.info("In confirmAuth found existing record");
-            String otp=null;
-            if(data.getAuth().getMode().equals("MOBILE_OTP")){
-                log.info("confirmAuth : "+"Waiting for otp......");
-                long startTime = System.currentTimeMillis();
-                long timeout = TimeUnit.SECONDS.toMillis(120);
-                while (otp == null) {
-                    if (System.currentTimeMillis() - startTime > timeout) {
-                        throw new TimeoutException("Timeout waiting for OTP in the database");
-                    }
-                    otp = logsRepo.findByGatewayRequestId1(data.getResp().getRequestId()).getOtp();
-                }
-            }
             LinkRecordsResponse linkRecordsResponse=(LinkRecordsResponse) existingRecord.getRawResponse().get("LinkRecordsResponse");
             Patients patient=patientRepo.findByPatientReference(linkRecordsResponse.getPatientReference());
-            HttpEntity<ObjectNode> requestEntity = ConfirmAuthBody.builder()
-                    .data(data)
-                    .patients(patient)
-                    .otp(otp)
-                    .sessionManager(sessionManager)
-                    .build()
-                    .makeRequest();
-            ResponseEntity<ObjectNode> responseEntity=MakeRequest.post(GatewayApiPaths.LINK_CONFIRM_AUTH,requestEntity);
-            log.info("ConfirmAuth :" + responseEntity.getStatusCode());
+            HttpEntity<ObjectNode> requestEntity=confirmAuthBody.makeRequest(data,patient.getName(),patient.getGender(),patient.getDateOfBirth());
+            ResponseEntity<ObjectNode> responseEntity = this.restTemplate.exchange(new URI(gatewayApiPaths.LINK_CONFIRM_AUTH), HttpMethod.POST, requestEntity, ObjectNode.class);
+            log.info("getConfirmAuth :" + responseEntity.getStatusCode());
             logsTableService.setContent(data,requestEntity, OnInitResponse.class);
             return responseEntity;
-        }else{
-            log.info("In confirmAuth not found existing record");
-        }
+        }log.info("In confirmAuth not found existing record");
         return null;
 
     }
     public ResponseEntity<ObjectNode> addContext(OnConfirmResponse data) throws Exception {
-        RequestLogs existingRecord=logsRepo.findByGatewayRequestId2(data.getResp().getRequestId());
+        RequestLogs existingRecord=logsRepo.findByGatewayRequestId(data.getResp().getRequestId());
         if(existingRecord!=null){
             log.info("in addContext found existing record");
             LinkRecordsResponse linkRecordsResponse=(LinkRecordsResponse)  existingRecord.getRawResponse().get("LinkRecordsResponse");
             Patients patient=patientRepo.findByPatientReference(linkRecordsResponse.getPatientReference());
-            HttpEntity<ObjectNode> requestEntity = CareContextRequest.builder()
-                    .data(data)
-                    .patients(patient)
-                    .careContexts(linkRecordsResponse.getPatient().getCareContexts())
-                    .sessionManager(sessionManager)
-                    .build()
-                    .makeRequest();
-
-            ResponseEntity<ObjectNode> responseEntity=MakeRequest.post(GatewayApiPaths.LINK_ADD_CARE_CONTEXT,requestEntity);
+            HttpEntity<ObjectNode> requestEntity=careContextRequest.makeRequest(data,patient.getPatientReference(),patient.getDisplay(),linkRecordsResponse.getPatient().getCareContexts(),null);
+            ResponseEntity<ObjectNode> responseEntity = this.restTemplate.exchange(new URI(gatewayApiPaths.LINK_ADD_CARE_CONTEXT), HttpMethod.POST, requestEntity, ObjectNode.class);
             logsTableService.setContent(data,requestEntity, OnConfirmResponse.class);
+            tokenManagementService.setToken(patient.getAbhaAddress(),data);
             return responseEntity;
         }
         return null;
+
+    }
+    public void addContextAccessToken(LinkRecordsResponse data,String accessToken,Patients patient) throws URISyntaxException, FileNotFoundException, JsonProcessingException {
+//        HttpEntity<ObjectNode> requestEntity=careContextRequest.makeRequest(data,patient.getPatientReference(),patient.getDisplay(),data.getPatient().getCareContexts(),accessToken);
+//        ResponseEntity<ObjectNode> responseEntity = this.restTemplate.exchange(new URI(gatewayApi.link_addCareContext), HttpMethod.POST, requestEntity, ObjectNode.class);
+//        if(responseEntity.getStatusCode().is2xxSuccessful()) log.info("without accessToken : add careContext success");
+//        else log.info("without accessToken : add careContext failed");
     }
 }

@@ -10,46 +10,38 @@ import com.nha.abdm.wrapper.hrp.common.Utils;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import com.nha.abdm.wrapper.hrp.mongo.tables.Patients;
-import lombok.Builder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 
-
-@Builder
+@Component
 public class ConfirmAuthBody {
 	private static final Logger log = LogManager.getLogger(ConfirmAuthBody.class);
+	@Autowired
+	Utils utils;
+	@Autowired
+	SessionManager sessionManager;
 
-	private SessionManager sessionManager;
-	private OnInitResponse data;
-	private Patients patients;
-	private String otp;
 
-
-	public HttpEntity<ObjectNode> makeRequest() throws FileNotFoundException, URISyntaxException, JsonProcessingException, TimeoutException {
+	public HttpEntity<ObjectNode> makeRequest(OnInitResponse data,String patientName,String patientGender, String patientDob) throws FileNotFoundException, URISyntaxException, JsonProcessingException {
 		JsonNodeFactory nodeFactory = JsonNodeFactory.instance;
 		ObjectNode requestBody = nodeFactory.objectNode();
 		String confirmRequestId = UUID.randomUUID().toString();
 		requestBody.put("requestId", confirmRequestId);
-		requestBody.put("timestamp", Utils.getCurrentTimeStamp());
+		requestBody.put("timestamp", this.utils.getCurrentTimeStamp().toString());
 		String initRequestId = data.getResp().getRequestId();
+		log.info("initRequestID: " + initRequestId + " confirmRequestId: " + confirmRequestId);
 		requestBody.put("transactionId", data.getAuth().getTransactionId());
 		log.info("Started Confirm auth after storing transactionId");
 		ObjectNode credentialNode = nodeFactory.objectNode();
 		if (data.getAuth().getMode().equals("DEMOGRAPHICS")) {
 			ObjectNode demographicNode = nodeFactory.objectNode();
-			demographicNode.put("name", patients.getName());
-			demographicNode.put("gender", patients.getGender());
-			demographicNode.put("dateOfBirth", patients.getDateOfBirth());
+			demographicNode.put("name", patientName);
+			demographicNode.put("gender", patientGender);
+			demographicNode.put("dateOfBirth", patientDob);
 			credentialNode.set("demographic", demographicNode);
-		}else if(data.getAuth().getMode().equals("MOBILE_OTP")){
-			credentialNode.put("authCode", otp);
 		}
 		requestBody.set("credential", credentialNode);
 		log.info("ConfirmBody : " + requestBody.toPrettyString());
