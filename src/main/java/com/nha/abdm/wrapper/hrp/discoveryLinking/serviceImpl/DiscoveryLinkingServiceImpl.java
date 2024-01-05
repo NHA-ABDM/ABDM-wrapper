@@ -44,7 +44,7 @@ public class DiscoveryLinkingServiceImpl implements DiscoverLinkingService {
     LogsRepo logsRepo;
 
     @Autowired
-    LogsTableService<InitResponse> logsTableService;
+    LogsTableService logsTableService;
     CustomError customError=new CustomError();
     JaroWinkler jaroWinkler = new JaroWinkler();
     ResponseEntity<ObjectNode> responseEntity;

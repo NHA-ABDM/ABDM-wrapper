@@ -1,5 +1,6 @@
 package com.nha.abdm.wrapper.hrp.discoveryLinking.responses.helpers;
 
+import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
 import lombok.Data;
 import java.util.List;
 
@@ -10,5 +11,5 @@ public class PatientWithCareContexts {
 
     private String referenceNumber;
 
-    private List<InitCareContextList> careContexts;
+    private List<CareContextBuilder> careContexts;
 }
