@@ -1,16 +1,20 @@
 package com.nha.abdm.wrapper.hrp.serviceImpl;
 
-import com.nha.abdm.wrapper.hrp.CommonHelpers.CareContextBuilder;
+import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.DiscoverResponse;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.InitResponse;
+import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.helpers.InitCareContextList;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.AddPatient;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.LinkRecordsResponse;
 import com.nha.abdm.wrapper.hrp.mongo.tables.Patients;
+import com.nha.abdm.wrapper.hrp.mongo.tables.RequestLogs;
+import com.nha.abdm.wrapper.hrp.repository.LogsRepo;
 import com.nha.abdm.wrapper.hrp.repository.PatientRepo;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,8 @@ public class PatientTableService {
     private static final Logger log = LogManager.getLogger(PatientTableService.class);
     @Autowired
     private final PatientRepo patientRepo;
+    @Autowired
+    private LogsRepo logsRepo;
 
     @Autowired
     MongoTemplate mongoTemplate;
@@ -46,6 +52,7 @@ public class PatientTableService {
             String patientReference=data.getPatientReference();
             try{
                 Patients existingRecord = this.patientRepo.findByPatientReference(patientReference);
+//            List<LinkRecordsResponse.CareContext> careContexts = data.getPatient().getCareContexts();
                 if (existingRecord == null) {
                     return null;
                 } else {
@@ -67,7 +74,6 @@ public class PatientTableService {
                 newRecord.setGender(data.getGender());
                 newRecord.setDateOfBirth(data.getDateOfBirth());
                 newRecord.setDisplay(data.getDisplay());
-                newRecord.setPatientMobile(data.getPatientMobile());
                 mongoTemplate.save(newRecord);
                 log.info("Successfully Added Patient : "+data.toString());
                 return  "Successfully Added Patient";
@@ -77,8 +83,7 @@ public class PatientTableService {
                         .set("gender",data.getGender())
                         .set("dateOfBirth",data.getDateOfBirth())
                         .set("display",data.getDisplay())
-                        .set("patientReference",data.getPatientReference())
-                        .set("patientMobile",data.getPatientMobile());
+                        .set("patientReference",data.getPatientReference());
                 Query query = new Query(Criteria.where("abhaAddress").is(data.getAbhaAddress()));
                 mongoTemplate.updateFirst(query, update, Patients.class);
                 log.info("Successfully Updated Patient : "+data.toString());

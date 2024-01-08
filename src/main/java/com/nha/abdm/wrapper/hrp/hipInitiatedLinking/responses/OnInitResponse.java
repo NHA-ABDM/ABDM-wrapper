@@ -12,6 +12,7 @@ import java.io.Serializable;
 @Data
 @Component
 public class OnInitResponse implements Serializable {
+	private static final long serialVersionUID = 165269402517398406L;
 	private String requestId;
 	private String timestamp;
 	private AuthData auth;

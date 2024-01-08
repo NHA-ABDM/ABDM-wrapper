@@ -3,6 +3,8 @@ package com.nha.abdm.wrapper.facade.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.ResponseHelper;
+import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.AddPatient;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.LinkRecordsResponse;
 import com.nha.abdm.wrapper.hrp.manager.WorkflowManager;
 import java.io.FileNotFoundException;
@@ -30,7 +32,7 @@ public class HIP {
 	}
 
     @PostMapping({"/get-status"})
-    public String getStatusOfCareContext(@RequestBody JsonNode data) throws JsonProcessingException, URISyntaxException, FileNotFoundException {
+    public String getStatusOfCareContext(@RequestBody ResponseHelper data) throws JsonProcessingException, URISyntaxException, FileNotFoundException {
         return workflowManager.getCareContextRequestStatus(data);
     }
 
@@ -39,4 +41,8 @@ public class HIP {
         log.info(data.toPrettyString());
     }
 
+    @PostMapping({"/add-patient"})
+    public String storePatient(@RequestBody AddPatient data){
+        return workflowManager.storePatientInWrapper(data);
+    }
 }
