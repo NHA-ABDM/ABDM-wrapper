@@ -49,6 +49,8 @@ dependencies {
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
     implementation 'org.apache.commons:commons-text:1.9'
     implementation 'info.debatty:java-string-similarity:2.0.0'
+    implementation 'com.auth0:java-jwt:4.4.0'
+
 }
 
 test {

@@ -4,6 +4,8 @@ import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.DiscoverResponse;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.InitResponse;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.helpers.InitCareContextList;
+import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.AddPatient;
+import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.LinkRecordsResponse;
 import com.nha.abdm.wrapper.hrp.mongo.tables.Patients;
 import com.nha.abdm.wrapper.hrp.mongo.tables.RequestLogs;
 import com.nha.abdm.wrapper.hrp.repository.LogsRepo;
@@ -23,6 +25,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Document(collection = "patients")
@@ -40,6 +43,55 @@ public class PatientTableService {
     @Autowired
     public PatientTableService(PatientRepo patientRepo) {
         this.patientRepo = patientRepo;
+    }
+
+    @Transactional
+    public String addPatient(Object content) {
+        if(content.getClass()== LinkRecordsResponse.class){
+            LinkRecordsResponse data=(LinkRecordsResponse) content;
+            String patientReference=data.getPatientReference();
+            try{
+                Patients existingRecord = this.patientRepo.findByPatientReference(patientReference);
+//            List<LinkRecordsResponse.CareContext> careContexts = data.getPatient().getCareContexts();
+                if (existingRecord == null) {
+                    return null;
+                } else {
+                    Query query = new Query(Criteria.where("patientReference").is(data.getPatientReference()));
+                    Update update = new Update().addToSet("careContext").each(data.getPatient().getCareContexts()) ;//TODO
+                    this.mongoTemplate.updateFirst(query, update, Patients.class);
+                }
+            }catch(Exception e){
+                log.info("addPatient :"+e);
+            }
+        }else if(content.getClass()== AddPatient.class){
+            AddPatient data=(AddPatient)content;
+            Patients existingRecord=patientRepo.findByAbhaAddress(data.getAbhaAddress());
+            if(existingRecord==null){
+                Patients newRecord=new Patients();
+                newRecord.setName(data.getName());
+                newRecord.setAbhaAddress(data.getAbhaAddress());
+                newRecord.setPatientReference(data.getPatientReference());
+                newRecord.setGender(data.getGender());
+                newRecord.setDateOfBirth(data.getDateOfBirth());
+                newRecord.setDisplay(data.getDisplay());
+                mongoTemplate.save(newRecord);
+                log.info("Successfully Added Patient : "+data.toString());
+                return  "Successfully Added Patient";
+            }else{
+                Update update = new Update().set("abhaAddress",data.getAbhaAddress())
+                        .set("name",data.getName())
+                        .set("gender",data.getGender())
+                        .set("dateOfBirth",data.getDateOfBirth())
+                        .set("display",data.getDisplay())
+                        .set("patientReference",data.getPatientReference());
+                Query query = new Query(Criteria.where("abhaAddress").is(data.getAbhaAddress()));
+                mongoTemplate.updateFirst(query, update, Patients.class);
+                log.info("Successfully Updated Patient : "+data.toString());
+                return  "Successfully Updated Patient";
+            }
+
+        }
+        return null;
     }
 
     public List<CareContextBuilder> getCareContexts(String abhaAddress, Object content) {

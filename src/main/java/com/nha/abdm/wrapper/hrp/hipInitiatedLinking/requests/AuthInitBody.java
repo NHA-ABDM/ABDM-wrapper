@@ -9,28 +9,28 @@ import com.nha.abdm.wrapper.hrp.common.Utils;
 
 import java.net.URISyntaxException;
 import java.util.UUID;
+
+import lombok.Builder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 
-@Component
+@Builder
 public class AuthInitBody {
 	private static final Logger log = LogManager.getLogger(AuthInitBody.class);
-	@Autowired
-	Utils utils;
-	@Autowired
-	SessionManager sessionManager;
+	private SessionManager sessionManager;
+	private LinkRecordsResponse data;
+	private String abhaAddress;
 
 
-
-	public HttpEntity<ObjectNode> makeRequest(LinkRecordsResponse data,String abhaAddress) throws URISyntaxException, JsonProcessingException {
+	public HttpEntity<ObjectNode> makeRequest() throws URISyntaxException, JsonProcessingException {
 		JsonNodeFactory nodeFactory = JsonNodeFactory.instance;
 		ObjectNode requestBody = nodeFactory.objectNode();
 		String requestId = data.getRequestId();
 		requestBody.put("requestId", requestId);
-		requestBody.put("timestamp", this.utils.getCurrentTimeStamp().toString());
+		requestBody.put("timestamp", Utils.getCurrentTimeStamp());
 		ObjectNode queryNode = nodeFactory.objectNode();
 		queryNode.put("id", abhaAddress);
 		queryNode.put("purpose", "KYC_AND_LINK");

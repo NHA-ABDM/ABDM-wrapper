@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.ResponseHelper;
 import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.DiscoverResponse;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.InitResponse;
@@ -15,6 +16,8 @@ import com.nha.abdm.wrapper.hrp.mongo.tables.RequestLogs;
 import com.nha.abdm.wrapper.hrp.repository.LogsRepo;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.nha.abdm.wrapper.hrp.repository.PatientRepo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class LogsTableService {
     @Autowired
     public LogsRepo logsRepo;
+    @Autowired
+    public PatientRepo patientRepo;
     @Autowired
     MongoTemplate mongoTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -88,13 +93,12 @@ public class LogsTableService {
         }if(contentType == LinkRecordsResponse.class && Objects.nonNull(content)){
             LinkRecordsResponse data=(LinkRecordsResponse) content;
                 RequestLogs newRecord=new RequestLogs();
-                newRecord.setRequestId(data.getRequestId());
+                newRecord.setGatewayRequestId1(data.getRequestId());
                 newRecord.setClientRequestId(data.getRequestId());
-                newRecord.setGatewayRequestId(requestEntity.getBody().get("requestId").asText());
+                newRecord.setResponse("Initiated");
                 HashMap<String,Object> map=new HashMap<>();
                 map.put("LinkRecordsResponse",data);
                 newRecord.setRawResponse(map);
-//                logsRepo.save(newRecord);
                 mongoTemplate.save(newRecord);
 
         }if(contentType == Object.class && Objects.nonNull(content)){
@@ -111,29 +115,29 @@ public class LogsTableService {
             }
         }if(contentType == OnInitResponse.class && Objects.nonNull(content)) {
             OnInitResponse data = (OnInitResponse) content;
-            Query query = new Query(Criteria.where("requestId").is(data.getResp().getRequestId()));
+            Query query = new Query(Criteria.where("gatewayRequestId1").is(data.getResp().getRequestId()));
             RequestLogs existingRecord = mongoTemplate.findOne(query, RequestLogs.class);
             HashMap<String,Object> map=existingRecord.getRawResponse();
             map.put("OnInitResponse",data);
             if (existingRecord != null) {
                 Update update = (new Update())
                         .set("rawResponse",map)
-                        .set("requestId", data.getRequestId())
-                        .set("gatewayRequestId", requestEntity.getBody().get("requestId").asText());
+                        .set("gatewayRequestId1", data.getRequestId())
+                        .set("gatewayRequestId2", requestEntity.getBody().get("requestId").asText());
                 mongoTemplate.updateFirst(query, update, RequestLogs.class);
             }
         }
         if(contentType == OnConfirmResponse.class && Objects.nonNull(content)) {
             OnConfirmResponse data = (OnConfirmResponse) content;
-            Query query = new Query(Criteria.where("requestId").is(data.getResp().getRequestId()));
+            Query query = new Query(Criteria.where("gatewayRequestId2").is(data.getResp().getRequestId()));
             RequestLogs existingRecord = mongoTemplate.findOne(query, RequestLogs.class);
             HashMap<String,Object> map=existingRecord.getRawResponse();
             map.put("OnConfirmResponse",data);
             if (existingRecord != null) {
                 Update update = (new Update())
                         .set("rawResponse",map)
-                        .set("requestId", data.getRequestId())
-                        .set("gatewayRequestId", requestEntity.getBody().get("requestId").asText());
+                        .set("gatewayRequestId1", data.getRequestId())
+                        .set("gatewayRequestId2", requestEntity.getBody().get("requestId").asText());
                 mongoTemplate.updateFirst(query, update, RequestLogs.class);
             }
         }
@@ -160,19 +164,24 @@ public class LogsTableService {
 
         return null;
     }
-    public String getStatus(JsonNode data) {
-        RequestLogs existingRecord=logsRepo.findByClientRequestId(data.get("requestId").asText());
+    public String getStatus(ResponseHelper data) {
+        RequestLogs existingRecord=logsRepo.findByClientRequestId(data.getRequestId());
         if(existingRecord!=null){
             return existingRecord.getResponse().toString();
         }
         return "Record failed but stored in database";
     }
         public void setStatus(OnAddCareContextResponse data) {
-        RequestLogs existingRecord=logsRepo.findByClientRequestId(data.getResp().getRequestId());
+        RequestLogs existingRecord=logsRepo.findByGatewayRequestId2(data.getResp().getRequestId());
+        try{
         if(existingRecord!=null){
-            Query query = new Query(Criteria.where("requestId").is(data.getResp().getRequestId()));
+            Query query = new Query(Criteria.where("gatewayRequestId2").is(data.getResp().getRequestId()));
             Update update = (new Update()).set("response", data.getAcknowledgement().getStatus());
             mongoTemplate.updateFirst(query, update, RequestLogs.class);
+            LinkRecordsResponse linkRecordsResponse=(LinkRecordsResponse) existingRecord.getRawResponse().get("LinkRecordsResponse");
+            patientTableService.updateCareContextStatus(linkRecordsResponse.getPatientReference(),linkRecordsResponse.getPatient().getCareContexts());
+        }}catch (Exception e){
+            log.error("Unable tom update the status of careContext");
         }
     }
 }

@@ -11,8 +11,8 @@ public interface LogsRepo extends MongoRepository<RequestLogs, String> {
     RequestLogs findByTransactionId(String transactionId);
     @Query("{linkRefNumber :?0}")
     RequestLogs findByLinkRefNumber(String linkRefNumber);
-    RequestLogs findByGatewayRequestId(String clientRequestId);
-    RequestLogs findByRequestId(String requestId);
+    RequestLogs findByGatewayRequestId1(String gatewayRequestId1);
+    RequestLogs findByGatewayRequestId2(String gatewayRequestId2);
 
 
 }

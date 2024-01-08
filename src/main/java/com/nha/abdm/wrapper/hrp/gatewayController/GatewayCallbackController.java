@@ -34,13 +34,13 @@ public class GatewayCallbackController {
 
 	@PostMapping({"/v0.5/users/auth/on-init"})
 	public void onInitResponse(@RequestBody OnInitResponse data) throws IOException, URISyntaxException {
-		log.info("getError in OnInitRequest callback: " + data.getError());
 		if (data != null && data.getError() == null) {
 			log.info(data.toString());
-			log.info(data.getAuth().getTransactionId());
 			this.workflowManager.startConfirmCall(data);
-		} else {
-			log.info("Error in onInitCall: " + data.getError());
+		} else if(data.getError()!=null) {
+			log.info("gotError in OnInitRequest callback: " + data.getError().toString());
+		}else{
+			log.error("gotError in OnInitRequest callback");
 		}
 
 	}
@@ -49,21 +49,25 @@ public class GatewayCallbackController {
 	public void onConfirmCall(@RequestBody OnConfirmResponse data) throws Exception {
 		if (data != null && data.getError() == null) {
 			log.info(data.toString());
-			log.info("onConfirm : " + data.getAuth().getAccessToken());
 			log.info("starting to add CareContext");
 			this.workflowManager.startAddCareContextCall(data);
-		}else log.info("failed in on-confirm");
+		}else if(data.getError()!=null){
+			log.error("/v0.5/users/auth/on-confirm error: "+data.getError().getMessage());
+		}else log.error("failed in on-confirm");
 	}
 
 	@PostMapping({"/v0.5/links/link/on-add-contexts"})
 	public void onAddCareContext(@RequestBody OnAddCareContextResponse data) {
+		log.info(data.toString());
 		if (data != null && data.getError() == null) {
 			log.info("Linked CareContext STATUS :" + data.getAcknowledgement().getStatus());
 			logsTableService.setStatus(data);
-		} else {
+		}else if(data.getError()!=null){
+			log.error("/v0.5/links/link/on-add-contexts error: "+data.getError().getMessage());
+		}
+		else {
 			log.info("Failed to add Context");
 		}
-
 	}
 	@PostMapping("/v0.5/care-contexts/discover")
 	public void discoverCall(@RequestBody DiscoverResponse data) throws URISyntaxException, JsonProcessingException {

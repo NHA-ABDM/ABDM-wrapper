@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nha.abdm.wrapper.hrp.common.CustomError;
 import com.nha.abdm.wrapper.hrp.common.GatewayApiPaths;
+import com.nha.abdm.wrapper.hrp.common.SessionManager;
+import com.nha.abdm.wrapper.hrp.discoveryLinking.requests.OnConfirmRequest;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.requests.CareContextRequest;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.requests.ConfirmAuthBody;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.services.HipInitiatedService;
@@ -29,6 +31,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.FileNotFoundException;
 import java.net.URI;
@@ -37,30 +41,15 @@ import java.net.URISyntaxException;
 @Service
 public class HipInitiatedServiceImpl implements HipInitiatedService {
     private static final Logger log = LogManager.getLogger(HipInitiatedServiceImpl.class);
-    RestTemplate restTemplate = new RestTemplate();
-    @Autowired
-    ApplicationConfig applicationConfig;
-    @Autowired
-    AuthInitBody authInitBody;
-    @Autowired
-    ConfirmAuthBody confirmAuthBody;
-
-    @Autowired
-    CareContextRequest careContextRequest;
     @Autowired
     LogsTableService logsTableService;
-
-    @Autowired
-    CareContextRequest careContextRequestOnConfirm;
-    @Autowired
-    CareContextRequest careContextRequestLinkedResponse;
-    @Autowired
-    GatewayApiPaths gatewayApiPaths;
     @Autowired
     PatientTableService patientTableService;
 
     @Autowired
     PatientRepo patientRepo;
+    @Autowired
+    SessionManager sessionManager;
 
     @Autowired
     LogsRepo logsRepo;
@@ -68,6 +57,7 @@ public class HipInitiatedServiceImpl implements HipInitiatedService {
     CustomError customError;
     @Autowired
     TokenManagementService tokenManagementService;
+    private WebClient.Builder webClientBuilder = WebClient.builder();
 
     public Object authInit(LinkRecordsResponse data) throws URISyntaxException, JsonProcessingException {
         try{
@@ -80,8 +70,21 @@ public class HipInitiatedServiceImpl implements HipInitiatedService {
                 return customError;
             }
             patientTableService.addPatient(data);
-            HttpEntity<ObjectNode> requestEntity = authInitBody.makeRequest(data,existingRecord.getAbhaAddress());
-            ResponseEntity<ObjectNode> responseEntity = this.restTemplate.exchange(new URI(gatewayApiPaths.LINK_AUTH_INIT), HttpMethod.POST, requestEntity, ObjectNode.class);
+            HttpEntity<ObjectNode> requestEntity = AuthInitBody.builder()
+                    .data(data)
+                    .abhaAddress(existingRecord.getAbhaAddress())
+                    .sessionManager(sessionManager)
+                    .build()
+                    .makeRequest();
+            ResponseEntity<ObjectNode> responseEntity = webClientBuilder
+                    .build()
+                    .post()
+                    .uri(GatewayApiPaths.LINK_AUTH_INIT)
+                    .headers(httpHeaders -> httpHeaders.addAll(requestEntity.getHeaders()))
+                    .body(BodyInserters.fromValue(requestEntity.getBody()))
+                    .retrieve()
+                    .toEntity(ObjectNode.class)
+                    .block();
             log.info("LinkRecords storing data");
             logsTableService.setContent(data,requestEntity, LinkRecordsResponse.class);
             log.info(responseEntity.getStatusCode());
@@ -91,35 +94,66 @@ public class HipInitiatedServiceImpl implements HipInitiatedService {
             return responseData;
 
         }catch(Exception e){
-            log.info("authInit : "+e);
+            log.info("Link authInit : "+e);
             customError.setCode(1000);
             customError.setMessage("Found many patients with same patientReference");
             return customError;
         }
     }
-    public ResponseEntity<ObjectNode> confirmAuth(@RequestBody OnInitResponse data) throws URISyntaxException, JsonProcessingException, FileNotFoundException {
-        RequestLogs existingRecord=logsRepo.findByRequestId(data.getResp().getRequestId());
+    public ResponseEntity<ObjectNode> confirmAuth(OnInitResponse data) throws URISyntaxException, JsonProcessingException, FileNotFoundException {
+        RequestLogs existingRecord=logsRepo.findByGatewayRequestId1(data.getResp().getRequestId());
         if(existingRecord!=null){
             log.info("In confirmAuth found existing record");
             LinkRecordsResponse linkRecordsResponse=(LinkRecordsResponse) existingRecord.getRawResponse().get("LinkRecordsResponse");
             Patients patient=patientRepo.findByPatientReference(linkRecordsResponse.getPatientReference());
-            HttpEntity<ObjectNode> requestEntity=confirmAuthBody.makeRequest(data,patient.getName(),patient.getGender(),patient.getDateOfBirth());
-            ResponseEntity<ObjectNode> responseEntity = this.restTemplate.exchange(new URI(gatewayApiPaths.LINK_CONFIRM_AUTH), HttpMethod.POST, requestEntity, ObjectNode.class);
-            log.info("getConfirmAuth :" + responseEntity.getStatusCode());
+            HttpEntity<ObjectNode> requestEntity = ConfirmAuthBody.builder()
+                    .data(data)
+                    .patients(patient)
+                    .sessionManager(sessionManager)
+                    .build()
+                    .makeRequest();
+
+            ResponseEntity<ObjectNode> responseEntity = webClientBuilder
+                    .build()
+                    .post()
+                    .uri(GatewayApiPaths.LINK_CONFIRM_AUTH)
+                    .headers(httpHeaders -> httpHeaders.addAll(requestEntity.getHeaders()))
+                    .body(BodyInserters.fromValue(requestEntity.getBody()))
+                    .retrieve()
+                    .toEntity(ObjectNode.class)
+                    .block();
+            log.info("ConfirmAuth :" + responseEntity.getStatusCode());
             logsTableService.setContent(data,requestEntity, OnInitResponse.class);
             return responseEntity;
-        }log.info("In confirmAuth not found existing record");
+        }else{
+            log.info("In confirmAuth not found existing record");
+        }
         return null;
 
     }
     public ResponseEntity<ObjectNode> addContext(OnConfirmResponse data) throws Exception {
-        RequestLogs existingRecord=logsRepo.findByGatewayRequestId(data.getResp().getRequestId());
+        RequestLogs existingRecord=logsRepo.findByGatewayRequestId2(data.getResp().getRequestId());
         if(existingRecord!=null){
             log.info("in addContext found existing record");
             LinkRecordsResponse linkRecordsResponse=(LinkRecordsResponse)  existingRecord.getRawResponse().get("LinkRecordsResponse");
             Patients patient=patientRepo.findByPatientReference(linkRecordsResponse.getPatientReference());
-            HttpEntity<ObjectNode> requestEntity=careContextRequest.makeRequest(data,patient.getPatientReference(),patient.getDisplay(),linkRecordsResponse.getPatient().getCareContexts(),null);
-            ResponseEntity<ObjectNode> responseEntity = this.restTemplate.exchange(new URI(gatewayApiPaths.LINK_ADD_CARE_CONTEXT), HttpMethod.POST, requestEntity, ObjectNode.class);
+            HttpEntity<ObjectNode> requestEntity = CareContextRequest.builder()
+                    .data(data)
+                    .patients(patient)
+                    .careContexts(linkRecordsResponse.getPatient().getCareContexts())
+                    .sessionManager(sessionManager)
+                    .build()
+                    .makeRequest();
+
+            ResponseEntity<ObjectNode> responseEntity = webClientBuilder
+                    .build()
+                    .post()
+                    .uri(GatewayApiPaths.LINK_ADD_CARE_CONTEXT)
+                    .headers(httpHeaders -> httpHeaders.addAll(requestEntity.getHeaders()))
+                    .body(BodyInserters.fromValue(requestEntity.getBody()))
+                    .retrieve()
+                    .toEntity(ObjectNode.class)
+                    .block();
             logsTableService.setContent(data,requestEntity, OnConfirmResponse.class);
             tokenManagementService.setToken(patient.getAbhaAddress(),data);
             return responseEntity;

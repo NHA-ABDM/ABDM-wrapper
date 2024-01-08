@@ -9,6 +9,7 @@ import lombok.Data;
 import java.io.Serializable;
 @Data
 public class OnConfirmResponse implements Serializable {
+	private static final long serialVersionUID = 165269402517398406L;
 	private String requestId;
 	private String timestamp;
 	private AuthData auth;

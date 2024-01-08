@@ -11,11 +11,11 @@ public class RequestLogs {
     @Field("clientRequestId")
     public String clientRequestId;
 
-    @Field("requestId")
-    public String requestId;
+    @Field("gatewayRequestId1")
+    public String gatewayRequestId1;
 
-    @Field("gatewayRequestId")
-    public String gatewayRequestId;
+    @Field("gatewayRequestId2")
+    public String gatewayRequestId2;
 
     @Field("response")
     public String response;
@@ -31,9 +31,9 @@ public class RequestLogs {
 
     @Field("rawResponse")
     public HashMap<String, Object> rawResponse;
-    public RequestLogs(String clientRequestId, String gatewayRequestId, String abhaAddress, String transactionId){
+    public RequestLogs(String clientRequestId, String gatewayRequestId2, String abhaAddress, String transactionId){
         this.clientRequestId=clientRequestId;
-        this.gatewayRequestId=gatewayRequestId;
+        this.gatewayRequestId2=gatewayRequestId2;
         this.abhaAddress=abhaAddress;
         this.transactionId=transactionId;
         this.response=response;
