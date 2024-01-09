@@ -2,6 +2,8 @@ package com.nha.abdm.wrapper.hrp.discoveryLinking.serviceImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.CareContextBuilder;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.CustomError;
 import com.nha.abdm.wrapper.hrp.common.*;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.requests.OnConfirmRequest;
 import com.nha.abdm.wrapper.hrp.mongo.tables.Patients;

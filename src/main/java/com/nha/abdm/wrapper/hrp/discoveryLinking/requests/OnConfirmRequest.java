@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.CareContextBuilder;
 import com.nha.abdm.wrapper.hrp.common.SessionManager;
 import com.nha.abdm.wrapper.hrp.common.Utils;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.ConfirmResponse;

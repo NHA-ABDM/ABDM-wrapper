@@ -1,6 +1,6 @@
 package com.nha.abdm.wrapper.hrp.mongo.tables;
 
-import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.CareContextBuilder;
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;

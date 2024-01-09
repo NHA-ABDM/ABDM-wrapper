@@ -1,4 +1,4 @@
-package com.nha.abdm.wrapper.hrp.common;
+package com.nha.abdm.wrapper.hrp.CommonHelpers;
 
 import lombok.Data;
 import org.springframework.stereotype.Component;

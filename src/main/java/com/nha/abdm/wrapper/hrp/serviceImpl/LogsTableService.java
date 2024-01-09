@@ -1,11 +1,11 @@
 package com.nha.abdm.wrapper.hrp.serviceImpl;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nha.abdm.wrapper.hrp.CommonHelpers.ResponseHelper;
-import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.VerifyOtp;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.CareContextBuilder;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.DiscoverResponse;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.InitResponse;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.LinkRecordsResponse;
@@ -96,6 +96,7 @@ public class LogsTableService {
                 newRecord.setGatewayRequestId1(data.getRequestId());
                 newRecord.setClientRequestId(data.getRequestId());
                 newRecord.setResponse("Initiated");
+                newRecord.setOtp(null);
                 HashMap<String,Object> map=new HashMap<>();
                 map.put("LinkRecordsResponse",data);
                 newRecord.setRawResponse(map);
@@ -181,6 +182,19 @@ public class LogsTableService {
             LinkRecordsResponse linkRecordsResponse=(LinkRecordsResponse) existingRecord.getRawResponse().get("LinkRecordsResponse");
             patientTableService.updateCareContextStatus(linkRecordsResponse.getPatientReference(),linkRecordsResponse.getPatient().getCareContexts());
         }}catch (Exception e){
+            log.error("Unable tom update the status of careContext");
+        }
+    }
+
+    public void setOtp(VerifyOtp data) {
+        RequestLogs existingRecord=logsRepo.findByClientRequestId(data.getRequestId());
+        try{
+            if(existingRecord!=null){
+                Query query = new Query(Criteria.where("clientRequestId").is(data.getRequestId()));
+                Update update = (new Update()).set("otp", data.getAuthCode());
+                mongoTemplate.updateFirst(query, update, RequestLogs.class);
+                log.info("set otp success");
+            }}catch (Exception e){
             log.error("Unable tom update the status of careContext");
         }
     }

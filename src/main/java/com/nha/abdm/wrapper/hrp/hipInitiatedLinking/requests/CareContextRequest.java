@@ -5,9 +5,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 //import com.nha.abdm.wrapper.hrp.serviceImpl.CareContextTableService;
-import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.CareContextBuilder;
 import com.nha.abdm.wrapper.hrp.common.SessionManager;
-import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.LinkRecordsResponse;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.OnConfirmResponse;
 import com.nha.abdm.wrapper.hrp.common.Utils;
 import java.io.FileNotFoundException;
@@ -20,11 +19,7 @@ import com.nha.abdm.wrapper.hrp.mongo.tables.Patients;
 import lombok.Builder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.checkerframework.checker.units.qual.A;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Builder
 public class CareContextRequest {

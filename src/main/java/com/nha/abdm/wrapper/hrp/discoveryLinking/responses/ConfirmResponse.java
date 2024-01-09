@@ -1,6 +1,6 @@
 package com.nha.abdm.wrapper.hrp.discoveryLinking.responses;
 
-import com.nha.abdm.wrapper.hrp.common.CustomError;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.CustomError;
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.helpers.Confirmation;
 import lombok.Data;
 import org.springframework.stereotype.Component;

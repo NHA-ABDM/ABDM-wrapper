@@ -28,6 +28,8 @@ public class RequestLogs {
 
     @Field("abhaAddress")
     public String abhaAddress;
+    @Field("otp")
+    public String otp;
 
     @Field("rawResponse")
     public HashMap<String, Object> rawResponse;

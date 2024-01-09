@@ -11,6 +11,7 @@ import com.nha.abdm.wrapper.hrp.manager.WorkflowManager;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeoutException;
 
 import com.nha.abdm.wrapper.hrp.serviceImpl.LogsTableService;
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +34,7 @@ public class GatewayCallbackController {
 	private static final Logger log = LogManager.getLogger(GatewayCallbackController.class);
 
 	@PostMapping({"/v0.5/users/auth/on-init"})
-	public void onInitResponse(@RequestBody OnInitResponse data) throws IOException, URISyntaxException {
+	public void onInitResponse(@RequestBody OnInitResponse data) throws IOException, URISyntaxException, TimeoutException {
 		if (data != null && data.getError() == null) {
 			log.info(data.toString());
 			this.workflowManager.startConfirmCall(data);
