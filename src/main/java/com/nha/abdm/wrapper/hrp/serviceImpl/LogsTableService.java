@@ -16,8 +16,6 @@ import com.nha.abdm.wrapper.hrp.mongo.tables.RequestLogs;
 import com.nha.abdm.wrapper.hrp.repository.LogsRepo;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import com.nha.abdm.wrapper.hrp.repository.PatientRepo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,15 +32,11 @@ public class LogsTableService {
     @Autowired
     public LogsRepo logsRepo;
     @Autowired
-    public PatientRepo patientRepo;
-    @Autowired
     MongoTemplate mongoTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     PatientTableService patientTableService;
     private static final Logger log = LogManager.getLogger(LogsTableService.class);
-
-
 
 
     public String getPatientId(String linkRefNumber) {
@@ -195,7 +189,7 @@ public class LogsTableService {
                 mongoTemplate.updateFirst(query, update, RequestLogs.class);
                 log.info("set otp success");
             }}catch (Exception e){
-            log.error("Unable tom update the status of careContext");
+            log.error("Unable to set otp");
         }
     }
 }
