@@ -3,10 +3,12 @@ package com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses;
 
 import com.nha.abdm.wrapper.hrp.discoveryLinking.responses.helpers.PatientWithCareContexts;
 import lombok.Data;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 import java.io.Serializable;
 @Data
 @Component
+@NonNull
 public class LinkRecordsResponse implements Serializable {
 	private static final long serialVersionUID = 165269402517398406L;
 
