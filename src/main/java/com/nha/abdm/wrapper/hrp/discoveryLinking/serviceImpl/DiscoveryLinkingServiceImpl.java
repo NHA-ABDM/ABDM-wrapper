@@ -75,6 +75,22 @@ public class DiscoveryLinkingServiceImpl implements DiscoverLinkingService {
                     customError.setMessage("HIP -> Details mismatch with mobile");
                     noPatient(data,customError);
                 }
+            }else if(Objects.nonNull(isPatientIdentifier)){
+                log.info("Patient matched with Patient Identifier");
+                if(isGenderMatch(isPatientIdentifier,receivedGender) && (isYOBInRange(isPatientIdentifier,receivedYob)&& (isFuzzyNameMatch(isPatientIdentifier,receivedName)))){
+                    List<CareContextBuilder> careContexts = isPatientIdentifier.getCareContexts().stream()
+                            .filter(context -> !context.isLinked())
+                            .collect(Collectors.toList());
+                    makeBody(data, isPatientIdentifier, careContexts);
+                }else{
+                    customError.setCode(1000);
+                    customError.setMessage("HIP : Details mismatch with patientIdentifier");
+                    noPatient(data,customError);
+                }
+            }else {
+                customError.setCode(1000);
+                customError.setMessage("HIP -> Patient Not found");
+                noPatient(data,customError);
             }
         }catch(Exception e){
             log.error("OnDiscover : "+ Arrays.toString(e.getStackTrace()));
