@@ -93,28 +93,6 @@ public class PatientTableService {
         return null;
     }
 
-    public List<CareContextBuilder> getCareContexts(String abhaAddress, Object content) {
-        if(Objects.nonNull(abhaAddress)){
-            Patients existingRecord = this.patientRepo.findByAbhaAddress(abhaAddress);
-            return existingRecord != null ? existingRecord.getCareContexts() : null;
-        }
-        if(content==DiscoverResponse.class){
-            DiscoverResponse data=(DiscoverResponse) content;
-            String patientIdentifier=null;
-            if(data.getPatient().getUnverifiedIdentifiers()!=null) patientIdentifier=data.getPatient().getUnverifiedIdentifiers().get(0).getValue();
-            String patientName=data.getPatient().getName();
-            String patientMobile=data.getPatient().getVerifiedIdentifiers().get(0).getValue();
-            if(Objects.nonNull(patientIdentifier)){
-                Patients existingRecord = this.patientRepo.findByPatientReference(patientIdentifier);
-                return existingRecord != null ? existingRecord.getCareContexts() : null;
-            }
-            if(Objects.nonNull(patientMobile)){
-                List<Patients> existingRecord = this.patientRepo.findByPatientMobile(patientMobile);
-                return existingRecord != null ? existingRecord.get(0).getCareContexts() : null;
-            }
-        }
-        return null;
-    }
 
     public String getPatientReference(String abhaAddress) {
         Patients existingRecord = this.patientRepo.findByAbhaAddress(abhaAddress);

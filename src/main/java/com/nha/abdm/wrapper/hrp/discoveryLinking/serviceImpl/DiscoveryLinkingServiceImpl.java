@@ -2,8 +2,8 @@ package com.nha.abdm.wrapper.hrp.discoveryLinking.serviceImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.nha.abdm.wrapper.hrp.common.CareContextBuilder;
-import com.nha.abdm.wrapper.hrp.common.CustomError;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.CareContextBuilder;
+import com.nha.abdm.wrapper.hrp.CommonHelpers.CustomError;
 import com.nha.abdm.wrapper.hrp.common.GatewayApiPaths;
 import com.nha.abdm.wrapper.hrp.common.MakeRequest;
 import com.nha.abdm.wrapper.hrp.common.SessionManager;
