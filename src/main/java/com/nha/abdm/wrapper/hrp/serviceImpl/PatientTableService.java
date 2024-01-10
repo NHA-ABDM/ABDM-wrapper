@@ -109,8 +109,8 @@ public class PatientTableService {
                 return existingRecord != null ? existingRecord.getCareContexts() : null;
             }
             if(Objects.nonNull(patientMobile)){
-                Patients existingRecord = this.patientRepo.findByPatientMobile(patientMobile);
-                return existingRecord != null ? existingRecord.getCareContexts() : null;
+                List<Patients> existingRecord = this.patientRepo.findByPatientMobile(patientMobile);
+                return existingRecord != null ? existingRecord.get(0).getCareContexts() : null;
             }
         }
         return null;

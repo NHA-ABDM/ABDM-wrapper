@@ -2,24 +2,21 @@ package com.nha.abdm.wrapper.facade.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nha.abdm.wrapper.hrp.CommonHelpers.ResponseHelper;
 import com.nha.abdm.wrapper.hrp.CommonHelpers.VerifyOtp;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.AddPatient;
 import com.nha.abdm.wrapper.hrp.hipInitiatedLinking.responses.LinkRecordsResponse;
 import com.nha.abdm.wrapper.hrp.manager.WorkflowManager;
-import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
-import java.text.ParseException;
-import java.util.Objects;
-
-import com.nha.abdm.wrapper.hrp.serviceImpl.PatientTableService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.util.Objects;
 
 @RestController
 public class HIP {

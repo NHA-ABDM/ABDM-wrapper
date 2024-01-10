@@ -52,11 +52,12 @@ public class HipInitiatedServiceImpl implements HipInitiatedService {
     @Autowired
     CustomError customError;
     private WebClient.Builder webClientBuilder = WebClient.builder();
+    private ResponseEntity<ObjectNode> responseEntity;
 
     public Object authInit(LinkRecordsResponse data) throws URISyntaxException, JsonProcessingException {
         try{
             Patients existingRecord=patientRepo.findByPatientReference(data.getPatientReference());
-            if(existingRecord.getAbhaAddress()==null){
+            if(existingRecord==null || existingRecord.getAbhaAddress()==null){
                 customError.setCode(10001);
                 customError.setMessage("Abha address not found with patient UID , kindly add patient");
                 log.info("Patient not found");
@@ -70,9 +71,11 @@ public class HipInitiatedServiceImpl implements HipInitiatedService {
                     .sessionManager(sessionManager)
                     .build()
                     .makeRequest();
-            ResponseEntity<ObjectNode> responseEntity=MakeRequest.post(GatewayApiPaths.LINK_AUTH_INIT,requestEntity);
             log.info("LinkRecords storing data");
             logsTableService.setContent(data,requestEntity, LinkRecordsResponse.class);
+
+            responseEntity=MakeRequest.post(GatewayApiPaths.LINK_AUTH_INIT,requestEntity);
+
             log.info(responseEntity.getStatusCode());
             ObjectNode responseData = new ObjectNode(JsonNodeFactory.instance);
             responseData.put("Status Code : ", responseEntity.getStatusCode().toString());
@@ -82,7 +85,7 @@ public class HipInitiatedServiceImpl implements HipInitiatedService {
         }catch(Exception e){
             log.info("Link authInit : "+e);
             customError.setCode(1000);
-            customError.setMessage("Found many patients with same patientReference");
+            customError.setMessage("Error Linking careContexts");
             return customError;
         }
     }
@@ -111,9 +114,11 @@ public class HipInitiatedServiceImpl implements HipInitiatedService {
                     .sessionManager(sessionManager)
                     .build()
                     .makeRequest();
-            ResponseEntity<ObjectNode> responseEntity=MakeRequest.post(GatewayApiPaths.LINK_CONFIRM_AUTH,requestEntity);
-            log.info("ConfirmAuth :" + responseEntity.getStatusCode());
+            responseEntity=MakeRequest.post(GatewayApiPaths.LINK_CONFIRM_AUTH,requestEntity);
+            log.info("Setting onInit response");
             logsTableService.setContent(data,requestEntity, OnInitResponse.class);
+            log.info("ConfirmAuth :" + responseEntity.getStatusCode());
+
             return responseEntity;
         }else{
             log.info("In confirmAuth not found existing record");
@@ -134,9 +139,11 @@ public class HipInitiatedServiceImpl implements HipInitiatedService {
                     .sessionManager(sessionManager)
                     .build()
                     .makeRequest();
-
-            ResponseEntity<ObjectNode> responseEntity=MakeRequest.post(GatewayApiPaths.LINK_ADD_CARE_CONTEXT,requestEntity);
+            log.info("Setting onConfirm response");
             logsTableService.setContent(data,requestEntity, OnConfirmResponse.class);
+
+            responseEntity=MakeRequest.post(GatewayApiPaths.LINK_ADD_CARE_CONTEXT,requestEntity);
+
             return responseEntity;
         }
         return null;
