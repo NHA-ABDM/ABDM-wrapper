@@ -1,6 +1,7 @@
 /* (C) 2024 */
-package com.nha.abdm.wrapper.hiu.hrp.consent.requests;
+package com.nha.abdm.wrapper.hip.hrp.consent.requests;
 
+import com.nha.abdm.wrapper.common.models.ConsentDetail;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Acknowledgement {
+public class HIPNotification {
   private String status;
   private String consentId;
+  private ConsentDetail consentDetail;
 }

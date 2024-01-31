@@ -4,13 +4,13 @@ package com.nha.abdm.wrapper.hip.hrp.link.userInitiated;
 import com.nha.abdm.wrapper.common.RequestManager;
 import com.nha.abdm.wrapper.common.Utils;
 import com.nha.abdm.wrapper.common.models.CareContext;
+import com.nha.abdm.wrapper.common.models.RespRequest;
 import com.nha.abdm.wrapper.common.responses.ErrorResponse;
 import com.nha.abdm.wrapper.hip.hrp.common.requests.CareContextRequest;
 import com.nha.abdm.wrapper.hip.hrp.database.mongo.repositories.PatientRepo;
 import com.nha.abdm.wrapper.hip.hrp.database.mongo.services.PatientService;
 import com.nha.abdm.wrapper.hip.hrp.database.mongo.services.RequestLogService;
 import com.nha.abdm.wrapper.hip.hrp.database.mongo.tables.Patient;
-import com.nha.abdm.wrapper.hip.hrp.discover.requests.Response;
 import com.nha.abdm.wrapper.hip.hrp.link.hipInitiated.responses.GatewayGenericResponse;
 import com.nha.abdm.wrapper.hip.hrp.link.userInitiated.requests.*;
 import com.nha.abdm.wrapper.hip.hrp.link.userInitiated.responses.ConfirmResponse;
@@ -86,7 +86,7 @@ public class LinkService implements LinkInterface {
               .timestamp(Utils.getCurrentTimeStamp())
               .transactionId(initResponse.getTransactionId())
               .link(onInitLink)
-              .resp(Response.builder().requestId(initResponse.getRequestId()).build())
+              .resp(RespRequest.builder().requestId(initResponse.getRequestId()).build())
               .build();
     } else {
       ErrorResponse errorResponse = new ErrorResponse();
@@ -98,7 +98,7 @@ public class LinkService implements LinkInterface {
               .requestId(requestId)
               .timestamp(Utils.getCurrentTimeStamp())
               .transactionId(initResponse.getTransactionId())
-              .resp(Response.builder().requestId(initResponse.getRequestId()).build())
+              .resp(RespRequest.builder().requestId(initResponse.getRequestId()).build())
               .error(errorResponse)
               .build();
     }
@@ -179,7 +179,7 @@ public class LinkService implements LinkInterface {
             .requestId(UUID.randomUUID().toString())
             .timestamp(Utils.getCurrentTimeStamp())
             .patient(onConfirmPatient)
-            .resp(Response.builder().requestId(confirmResponse.getRequestId()).build())
+            .resp(RespRequest.builder().requestId(confirmResponse.getRequestId()).build())
             .build();
     log.info("onConfirm : " + onConfirmRequest.toString());
     try {

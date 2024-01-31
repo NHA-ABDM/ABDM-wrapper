@@ -4,6 +4,7 @@ package com.nha.abdm.wrapper.hip.hrp.discover;
 import com.nha.abdm.wrapper.common.RequestManager;
 import com.nha.abdm.wrapper.common.Utils;
 import com.nha.abdm.wrapper.common.models.CareContext;
+import com.nha.abdm.wrapper.common.models.RespRequest;
 import com.nha.abdm.wrapper.common.responses.ErrorResponse;
 import com.nha.abdm.wrapper.hip.hrp.common.requests.CareContextRequest;
 import com.nha.abdm.wrapper.hip.hrp.database.mongo.repositories.PatientRepo;
@@ -189,7 +190,7 @@ public class DiscoveryService implements DiscoveryInterface {
             .timestamp(Utils.getCurrentTimeStamp().toString())
             .transactionId(discoverResponse.getTransactionId())
             .patient(onDiscoverPatient)
-            .resp(Response.builder().requestId(discoverResponse.getRequestId()).build())
+            .resp(RespRequest.builder().requestId(discoverResponse.getRequestId()).build())
             .build();
     log.info("onDiscover : " + onDiscoverRequest.toString());
     try {
@@ -218,7 +219,7 @@ public class DiscoveryService implements DiscoveryInterface {
             .requestId(UUID.randomUUID().toString())
             .timestamp(Utils.getCurrentTimeStamp().toString())
             .transactionId(discoverResponse.getTransactionId())
-            .resp(Response.builder().requestId(discoverResponse.getRequestId()).build())
+            .resp(RespRequest.builder().requestId(discoverResponse.getRequestId()).build())
             .error(errorResponse)
             .build();
     log.info("onDiscover : " + onDiscoverErrorRequest.toString());

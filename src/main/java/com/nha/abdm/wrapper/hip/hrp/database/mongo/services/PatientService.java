@@ -8,9 +8,11 @@ import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import com.nha.abdm.wrapper.common.models.CareContext;
 import com.nha.abdm.wrapper.common.responses.FacadeResponse;
+import com.nha.abdm.wrapper.hip.hrp.consent.requests.HIPNotifyRequest;
 import com.nha.abdm.wrapper.hip.hrp.database.mongo.repositories.LogsRepo;
 import com.nha.abdm.wrapper.hip.hrp.database.mongo.repositories.PatientRepo;
 import com.nha.abdm.wrapper.hip.hrp.database.mongo.tables.Patient;
+import com.nha.abdm.wrapper.hip.hrp.database.mongo.tables.helpers.FieldIdentifiers;
 import com.nha.abdm.wrapper.hip.hrp.link.hipInitiated.requests.LinkRecordsRequest;
 import com.nha.abdm.wrapper.hip.hrp.link.userInitiated.responses.InitResponse;
 import java.util.ArrayList;
@@ -160,6 +162,18 @@ public class PatientService {
       log.info("addPatient :" + e);
     }
     log.info("Successfully Added Patient careContexts");
+  }
+
+  public void addConsentArtefacts(HIPNotifyRequest hipNotifyRequest) {
+    String abhaAddress =
+        hipNotifyRequest.getHIPNotification().getConsentDetail().getPatient().getId();
+    Query query = new Query(Criteria.where(FieldIdentifiers.ABHA_ADDRESS).is(abhaAddress));
+    Update update =
+        new Update()
+            .addToSet(
+                FieldIdentifiers.CONSENT_ARTEFACTS,
+                hipNotifyRequest.getHIPNotification().getConsentDetail());
+    mongoTemplate.updateFirst(query, update, Patient.class);
   }
 
   /**

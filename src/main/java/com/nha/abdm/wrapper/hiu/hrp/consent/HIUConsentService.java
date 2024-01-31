@@ -27,8 +27,8 @@ public class HIUConsentService implements HIUConsentInterface {
   @Value("${consentStatusPath}")
   private String consentStatusPath;
 
-  @Value("${consentOnNotifyPath}")
-  private String consentOnNotifyPath;
+  @Value("${consentHiuOnNotifyPath}")
+  private String consentHiuOnNotifyPath;
 
   @Value("${fetchConsentPath}")
   private String fetchConsentPath;
@@ -98,7 +98,7 @@ public class HIUConsentService implements HIUConsentInterface {
   public FacadeResponse hiuOnNotify(OnNotifyRequest onNotifyRequest) {
     try {
       ResponseEntity<GatewayGenericResponse> response =
-          requestManager.fetchResponseFromGateway(consentOnNotifyPath, onNotifyRequest);
+          requestManager.fetchResponseFromGateway(consentHiuOnNotifyPath, onNotifyRequest);
       if (Objects.nonNull(response.getBody())
           && Objects.nonNull(response.getBody().getErrorResponse())) {
         return FacadeResponse.builder()

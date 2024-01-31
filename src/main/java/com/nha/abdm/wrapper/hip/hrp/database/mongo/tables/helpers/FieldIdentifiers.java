@@ -7,6 +7,8 @@ public class FieldIdentifiers {
   public static final String REQUEST_DETAILS = "requestDetails";
   public static final String STATUS = "status";
   public static final String ERROR = "error";
+  public static final String ABHA_ADDRESS = "abhaAddress";
+  public static final String CONSENT_ARTEFACTS = "consentArtefacts";
 
   // Nested fields.
   public static final String LINK_RECORDS_REQUEST = "LinkRecordsRequest";

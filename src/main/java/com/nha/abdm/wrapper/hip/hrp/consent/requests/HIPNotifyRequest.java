@@ -1,5 +1,5 @@
 /* (C) 2024 */
-package com.nha.abdm.wrapper.hiu.hrp.consent.requests;
+package com.nha.abdm.wrapper.hip.hrp.consent.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OnNotifyRespRequest {
+public class HIPNotifyRequest {
   private String requestId;
+  private String timestamp;
+  private HIPNotification HIPNotification;
 }

@@ -1,8 +1,8 @@
 /* (C) 2024 */
 package com.nha.abdm.wrapper.hip.hrp.link.hipInitiated.responses;
 
+import com.nha.abdm.wrapper.common.models.RespRequest;
 import com.nha.abdm.wrapper.common.responses.ErrorResponse;
-import com.nha.abdm.wrapper.hip.hrp.discover.requests.Response;
 import com.nha.abdm.wrapper.hip.hrp.link.hipInitiated.responses.helpers.LinkAuthData;
 import java.io.Serializable;
 import lombok.Data;
@@ -15,6 +15,6 @@ public class LinkOnInitResponse implements Serializable {
   private String requestId;
   private String timestamp;
   private LinkAuthData auth;
-  private Response resp;
+  private RespRequest resp;
   private ErrorResponse error;
 }

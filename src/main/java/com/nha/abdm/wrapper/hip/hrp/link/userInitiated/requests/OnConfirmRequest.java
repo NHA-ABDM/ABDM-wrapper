@@ -1,8 +1,8 @@
 /* (C) 2024 */
 package com.nha.abdm.wrapper.hip.hrp.link.userInitiated.requests;
 
+import com.nha.abdm.wrapper.common.models.RespRequest;
 import com.nha.abdm.wrapper.common.responses.ErrorResponse;
-import com.nha.abdm.wrapper.hip.hrp.discover.requests.Response;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +17,6 @@ public class OnConfirmRequest {
   private String requestId;
   private String timestamp;
   private OnConfirmPatient patient;
-  private Response resp;
+  private RespRequest resp;
   private ErrorResponse error;
 }

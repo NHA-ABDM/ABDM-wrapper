@@ -1,7 +1,9 @@
 /* (C) 2024 */
-package com.nha.abdm.wrapper.hiu.hrp.consent.requests.callback;
+package com.nha.abdm.wrapper.common.models;
 
 import com.nha.abdm.wrapper.hiu.hrp.consent.requests.*;
+import com.nha.abdm.wrapper.hiu.hrp.consent.requests.callback.OnFetchConsentManager;
+import com.nha.abdm.wrapper.hiu.hrp.consent.requests.callback.OnFetchConsentPatient;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OnFetchConsentDetail {
+public class ConsentDetail {
   private String schemaVersion;
   private String consentId;
   private String createdAt;

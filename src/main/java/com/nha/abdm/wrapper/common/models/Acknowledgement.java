@@ -1,5 +1,5 @@
 /* (C) 2024 */
-package com.nha.abdm.wrapper.hiu.hrp.consent.requests.callback;
+package com.nha.abdm.wrapper.common.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CallbackRespRequest {
-  private String requestId;
+public class Acknowledgement {
+  private String status;
+  private String consentId;
 }

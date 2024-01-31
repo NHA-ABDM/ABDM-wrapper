@@ -1,7 +1,9 @@
 /* (C) 2024 */
-package com.nha.abdm.wrapper.hip.hrp.discover.requests;
+package com.nha.abdm.wrapper.hip.hrp.consent.requests;
 
+import com.nha.abdm.wrapper.common.models.Acknowledgement;
 import com.nha.abdm.wrapper.common.models.RespRequest;
+import com.nha.abdm.wrapper.common.responses.ErrorResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,11 +13,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OnDiscoverRequest {
-
+public class HIPOnNotifyRequest {
   private String requestId;
   private String timestamp;
-  private String transactionId;
-  private OnDiscoverPatient patient;
+  private Acknowledgement acknowledgement;
+  private ErrorResponse error;
   private RespRequest resp;
 }

@@ -1,6 +1,8 @@
 /* (C) 2024 */
 package com.nha.abdm.wrapper.hiu.hrp.consent.requests;
 
+import com.nha.abdm.wrapper.common.models.Acknowledgement;
+import com.nha.abdm.wrapper.common.models.RespRequest;
 import com.nha.abdm.wrapper.common.responses.ErrorResponse;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -17,5 +19,5 @@ public class OnNotifyRequest {
   private String timestamp;
   private List<Acknowledgement> acknowledgment;
   private ErrorResponse error;
-  private OnNotifyRespRequest resp;
+  private RespRequest resp;
 }

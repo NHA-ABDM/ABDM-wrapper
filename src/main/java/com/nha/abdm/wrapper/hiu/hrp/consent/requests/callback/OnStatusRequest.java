@@ -1,6 +1,7 @@
 /* (C) 2024 */
 package com.nha.abdm.wrapper.hiu.hrp.consent.requests.callback;
 
+import com.nha.abdm.wrapper.common.models.RespRequest;
 import com.nha.abdm.wrapper.common.responses.ErrorResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,5 +17,5 @@ public class OnStatusRequest {
   private String timestamp;
   private OnStatusConsentRequest consentRequest;
   private ErrorResponse error;
-  private CallbackRespRequest resp;
+  private RespRequest resp;
 }
