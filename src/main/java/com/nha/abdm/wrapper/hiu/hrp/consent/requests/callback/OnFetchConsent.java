@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OnFetchConsent {
   private String status;
+  private OnFetchConsentDetail consentDetail;
 }

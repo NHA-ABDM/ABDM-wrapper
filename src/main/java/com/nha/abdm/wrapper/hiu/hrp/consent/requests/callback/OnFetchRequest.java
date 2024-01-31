@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class OnFetchRequest {
   private String requestId;
   private String timestamp;
-  private OnFetchConsentDetail consent;
+  private OnFetchConsent consent;
   private ErrorResponse error;
   private CallbackRespRequest resp;
 }
