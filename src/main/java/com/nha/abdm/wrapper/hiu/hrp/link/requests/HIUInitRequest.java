@@ -1,7 +1,7 @@
 /* (C) 2024 */
-package com.nha.abdm.wrapper.hiu.hrp.discovery.requests;
+package com.nha.abdm.wrapper.hiu.hrp.link.requests;
 
-import com.nha.abdm.wrapper.hiu.hrp.discovery.requests.helpers.PatientWithReferenceNumber;
+import com.nha.abdm.wrapper.hiu.hrp.link.requests.helpers.PatientWithReferenceNumber;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

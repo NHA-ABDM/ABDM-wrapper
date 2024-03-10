@@ -1,5 +1,5 @@
 /* (C) 2024 */
-package com.nha.abdm.wrapper.hiu.hrp.discovery.requests;
+package com.nha.abdm.wrapper.hiu.hrp.link.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
