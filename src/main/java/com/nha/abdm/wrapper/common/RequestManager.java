@@ -45,4 +45,16 @@ public class RequestManager {
         .toEntity(GenericResponse.class)
         .block();
   }
+
+  public ResponseEntity<Object> fetchResponseForPHR(
+      String uri, Object request, String xAuthToken, String path) {
+    return hiuWebClient
+        .post()
+        .uri(uri + path)
+        .headers(headers -> headers.add("X-AUTH-TOKEN", xAuthToken))
+        .body(BodyInserters.fromValue(request))
+        .retrieve()
+        .toEntity(Object.class)
+        .block();
+  }
 }
