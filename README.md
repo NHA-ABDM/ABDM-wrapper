@@ -26,14 +26,15 @@ health providers.
 
 The callback apis which gateway would be making to wrapper should be behind
 facility's firewall.
-
+---
 ## Pre-requisites
-### 1. Install ABHA SBX PHR App on your mobile.
+### 1. Refer the documentation [here](docs/ABDM-Wrapper_Doc.pdf)
+### 2. Install ABHA SBX PHR App on your mobile.
 
 > https://sandbox.abdm.gov.in/docs/phr_app
 
 
-### 2. Create ABHA Address
+### 3. Create ABHA Address
 
 ```
 * Skip if ABHA Address already exists.
@@ -46,7 +47,7 @@ ABHA Address can be created using:
 After creating the ABHA Address, your id should look like "yourAbha@sbx"
 ```
 
-### 3. System Requirements and Installations:
+### 4. System Requirements and Installations:
 There are two ways to get wrapper and related applications running on your system:
 #### 1. Using docker (Preferred): This is an easy way to get wrapper up and running.
 Install docker and docker-compose: You can install docker desktop from [here](https://www.docker.com/products/docker-desktop/) to get both.
@@ -73,11 +74,11 @@ If you need to bring these services up, then you need to install gradle from [he
 System Requirements:
 - For Mongodb, you can check [here](https://www.mongodb.com/docs/manual/administration/production-notes/) to understand resource requirements.
 - For Java17, you can check [here](https://www.oracle.com/java/technologies/javase/products-doc-jdk17certconfig.html) for compatible system configurations.
-- Gradle version >= 8.5 should be fine.
+- Gradle version >= 8.5 should be fine. 
+- Recommended RAM: Systems with more than 8 GB RAM
 
-Recommended RAM: Systems with more than 8 GB RAM
-
-### 4. Register bridge (hostUrl) with ABDM for callbacks.
+---
+### 5. Register bridge (hostUrl) with ABDM for callbacks.
 1. Get Access Token.
 ```
 curl --location 'https://dev.abdm.gov.in/api/hiecm/gateway/v3/sessions' \
@@ -106,14 +107,16 @@ curl --location --request PATCH 'https://dev.abdm.gov.in/api/hiecm/gateway/v3/br
 ```
 3. Check the BRIDGE URL and Facilities
 ```
-curl --location 'https://dev.abdm.gov.in/gateway/v1/bridges/getServices' \
---header 'Authorization: Bearer your accessToken' \
+curl --location 'https: //dev.abdm.gov.in/api/hiecm/gateway/v3/bridge-services' \
+--header 'REQUEST-ID: a774b4e9-eeae-4a19-9d91-22098c73822c' \
+--header 'TIMESTAMP: 2025-01-03T09: 14: 25.557Z' \
 --header 'X-CM-ID: sbx' \
---data ''
+--header 'Authorization: Bearer {{AUTH_TOKEN}}'
 ```
+---
 ## Swagger UI
-1. Wrapper API's you can check [here](https://wrapper-sbx.abdm.gov.in/swagger/wrapper)
-2. FHIR Module API's you can check [here](https://wrapper-sbx.abdm.gov.in/swagger/fhir)
+- All the API related to Wrapper and FHIR are available [here](https://venuajitesh.github.io/ABDM-wrapper/)
+---
 ## Bring the application up.
 1. Communication with ABDM gateway
    * Provide clientId and clientSecret in [application.properties](src/main/resources/application.properties)
@@ -128,7 +131,7 @@ curl --location 'https://dev.abdm.gov.in/gateway/v1/bridges/getServices' \
       - useProxySettings=true
       - proxyHost=your proxy server ip
       - proxyPort=your proxy server port
-
+---
 ## Modules in wrapper:
 Wrapper has in 3 modules:
 1. Patient
@@ -144,7 +147,7 @@ Wrapper has in 3 modules:
    * Creation of consents 
    * Health information exchange
 
-
+---
 ## Helper Applications
 This repository offers few helper sample applications: 
 - **Sample HIP**
